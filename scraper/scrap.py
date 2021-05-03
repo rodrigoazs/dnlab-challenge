@@ -1,6 +1,5 @@
 import time
 import os
-import copy
 import requests
 from itertools import chain
 from bs4 import BeautifulSoup
@@ -12,18 +11,18 @@ from pymongo import MongoClient
 BASE_URL = 'https://www.urparts.com'
 
 model = {
-        "manufacturer": None,
-        "category": None,
-        "model": None,
-        "part": None,
-        "part_category": None
-    }
+    "manufacturer": None,
+    "category": None,
+    "model": None,
+    "part": None,
+    "part_category": None
+}
 
 
 def scrap_a_tags(url, class_):
     # fix some sections url
     if url == 'index.cfm/page/catalogue/Doosan/Loader Parts/430':
-        url = 'index.cfm/page/catalogue/Doosan/Loader Parts/430/Loader'        
+        url = 'index.cfm/page/catalogue/Doosan/Loader Parts/430/Loader'
 
     # collect first page of list
     page = requests.get(os.path.join(BASE_URL, url))
@@ -55,7 +54,7 @@ def get_items(url, class_, model, column_fill):
     for content in content_list_items:
         url = content.get('href')
         name = content.contents[0].strip()
-        new_model = copy.deepcopy(model)
+        new_model = model.copy()
         new_model[column_fill] = name
         items.append((url, new_model))
 
@@ -76,28 +75,49 @@ def get_parts(url, class_, model, column_fill_1, column_fill_2):
         category_find = content.find_all('span')
         if len(category_find):
             category = category_find[0].contents[0].strip()
-        new_model = copy.deepcopy(model)
+        new_model = model.copy()
         new_model[column_fill_1] = name
         new_model[column_fill_2] = category
         items.append(new_model)
 
-    return items  
+    return items
 
 
 def scrap_manufacturer():
-    return get_items('index.cfm/page/catalogue', 'c_container allmakes', model, 'manufacturer')
+    return get_items(
+        'index.cfm/page/catalogue',
+        'c_container allmakes',
+        model,
+        'manufacturer'
+    )
 
 
 def scrap_categories(item):
-    return get_items(item[0], 'c_container allmakes allcategories', item[1], 'category')
+    return get_items(
+        item[0],
+        'c_container allmakes allcategories',
+        item[1],
+        'category'
+    )
 
 
 def scrap_models(item):
-    return get_items(item[0], 'c_container allmodels', item[1], 'model')
+    return get_items(
+        item[0],
+        'c_container allmodels',
+        item[1],
+        'model'
+    )
 
 
 def scrap_parts(item):
-    return get_parts(item[0], 'c_container allparts', item[1], 'part', 'part_category')
+    return get_parts(
+        item[0],
+        'c_container allparts',
+        item[1],
+        'part',
+        'part_category'
+    )
 
 
 if __name__ == "__main__":
@@ -111,7 +131,6 @@ if __name__ == "__main__":
         n_jobs=8,
         verbose=50
     )(delayed(scrap_categories)(manufacturer) for manufacturer in manufacturers)
-    # all_categories = [scrap_categories(manufacturer) for manufacturer in manufacturers]
     all_categories = list(chain.from_iterable(all_categories))
 
     # store models

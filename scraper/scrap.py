@@ -5,6 +5,7 @@ import requests
 from itertools import chain
 from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
+from pymongo import MongoClient
 
 
 # base URL
@@ -101,6 +102,7 @@ def scrap_parts(item):
 
 if __name__ == "__main__":
     start_time = time.time()
+
     # store catalogues
     manufacturers = scrap_manufacturer()
 
@@ -130,3 +132,9 @@ if __name__ == "__main__":
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print(len(all_parts))
+
+    client = MongoClient('mongodb://mongodb:mongodb@mongodb:27017/')
+    base = client['urparts']
+    table = base['urparts']
+
+    table.insert_many(all_parts)

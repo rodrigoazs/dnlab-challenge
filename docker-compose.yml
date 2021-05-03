@@ -1,0 +1,22 @@
+version: "3.3"
+
+services:
+    mongodb:
+        image : mongo
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: mongodb
+            MONGO_INITDB_ROOT_PASSWORD: mongodb
+        ports:
+            - 27017:27017
+        volumes:
+            - ./data/db/:/data/db/
+        expose:
+            - 27017
+        restart: unless-stopped
+    scraping:
+        build: ./scraper
+        command: python scrap.py
+        volumes:
+            - ./scraper:/code
+        depends_on:
+            - mongodb

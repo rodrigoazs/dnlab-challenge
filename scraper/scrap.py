@@ -128,14 +128,14 @@ if __name__ == "__main__":
 
     # store categories
     all_categories = Parallel(
-        n_jobs=8,
+        n_jobs=4,
         verbose=50
     )(delayed(scrap_categories)(manufacturer) for manufacturer in manufacturers)
     all_categories = list(chain.from_iterable(all_categories))
 
     # store models
     all_models = Parallel(
-        n_jobs=8,
+        n_jobs=4,
         verbose=50
     )(delayed(scrap_models)(category) for category in all_categories)
     # all_models = [scrap_models(category) for category in all_categories]
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     # store models
     all_parts = Parallel(
-        n_jobs=8,
+        n_jobs=4,
         verbose=50
     )(delayed(scrap_parts)(model) for model in all_models)
     # all_parts = [scrap_parts(model) for model in all_models]

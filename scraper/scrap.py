@@ -153,7 +153,7 @@ if __name__ == "__main__":
     print(len(all_parts))
 
     client = MongoClient('mongodb://mongodb:mongodb@mongodb:27017/')
-    base = client['urparts']
-    table = base['urparts']
+    base = client.urparts
+    table = base.urparts
 
     table.insert_many(all_parts)

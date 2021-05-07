@@ -1,6 +1,7 @@
 import time
 import os
 import requests
+# import json
 from itertools import chain
 from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
@@ -9,14 +10,6 @@ from pymongo import MongoClient
 
 # base URL
 BASE_URL = 'https://www.urparts.com'
-
-model = {
-    "manufacturer": None,
-    "category": None,
-    "model": None,
-    "part": None,
-    "part_category": None
-}
 
 
 def scrap_a_tags(url, class_):
@@ -43,7 +36,7 @@ def scrap_a_tags(url, class_):
     return content_list_items
 
 
-def get_items(url, class_, model, column_fill):
+def get_items(url, class_):
     # pull all instances of a tag within the div
     content_list_items = scrap_a_tags(url, class_)
 
@@ -54,15 +47,13 @@ def get_items(url, class_, model, column_fill):
     for content in content_list_items:
         url = content.get('href')
         name = content.contents[0].strip()
-        new_model = model.copy()
-        new_model[column_fill] = name
-        items.append((url, new_model))
+        items.append((url, name))
 
     return items
 
 
-def get_parts(url, class_, model, column_fill_1, column_fill_2):
-    # pull all instances of a tag within the div
+def get_parts(item, class_):
+    url, manufacturer, category, model = item
     content_list_items = scrap_a_tags(url, class_)
 
     # store items
@@ -71,14 +62,18 @@ def get_parts(url, class_, model, column_fill_1, column_fill_2):
     # create for loop to collect href and names
     for content in content_list_items:
         name = content.contents[0].split(' - ')[0].strip()
-        category = None
-        category_find = content.find_all('span')
-        if len(category_find):
-            category = category_find[0].contents[0].strip()
-        new_model = model.copy()
-        new_model[column_fill_1] = name
-        new_model[column_fill_2] = category
-        items.append(new_model)
+        part_category = None
+        part_category_find = content.find_all('span')
+        if len(part_category_find):
+            part_category = part_category_find[0].contents[0].strip()
+        item = {
+            "manufacturer": manufacturer,
+            "category": category,
+            "model": model,
+            "part": name,
+            "part_category": part_category
+        }
+        items.append(item)
 
     return items
 
@@ -86,38 +81,38 @@ def get_parts(url, class_, model, column_fill_1, column_fill_2):
 def scrap_manufacturer():
     return get_items(
         'index.cfm/page/catalogue',
-        'c_container allmakes',
-        model,
-        'manufacturer'
+        'c_container allmakes'
     )
 
 
 def scrap_categories(item):
-    return get_items(
+    items = get_items(
         item[0],
-        'c_container allmakes allcategories',
-        item[1],
-        'category'
+        'c_container allmakes allcategories'
     )
+    items = list(map(lambda x: (x[0], item[1], x[1]), items))
+    return items
 
 
 def scrap_models(item):
-    return get_items(
+    items = get_items(
         item[0],
-        'c_container allmodels',
-        item[1],
-        'model'
+        'c_container allmodels'
     )
+    items = list(map(lambda x: (x[0], item[1], item[2], x[1]), items))
+    return items
 
 
 def scrap_parts(item):
     return get_parts(
-        item[0],
-        'c_container allparts',
-        item[1],
-        'part',
-        'part_category'
+        item,
+        'c_container allparts'
     )
+
+
+def map_categories(items, manufacturer):
+    items = list(map(lambda x: (x[0], manufacturer, x[1]), items))
+    return items
 
 
 if __name__ == "__main__":
@@ -125,41 +120,47 @@ if __name__ == "__main__":
 
     # store catalogues
     manufacturers = scrap_manufacturer()
+    print("Total of %s manufacturers" % (len(manufacturers)))
+    # 16 manufacturers
 
     # store categories
-    all_categories = Parallel(
+    items = Parallel(
         n_jobs=8,
         verbose=50
-    )(delayed(scrap_categories)(manufacturer) for manufacturer in manufacturers)
-    all_categories = list(chain.from_iterable(all_categories))
+    )(delayed(scrap_categories)(item) for item in manufacturers)
+    categories = list(chain.from_iterable(items))
+    print("Total of %s categories" % (len(categories)))
+    # 42 categories
 
     # store models
-    all_models = Parallel(
+    items = Parallel(
         n_jobs=8,
         verbose=50
-    )(delayed(scrap_models)(category) for category in all_categories)
-    # all_models = [scrap_models(category) for category in all_categories]
-    all_models = list(chain.from_iterable(all_models))
+    )(delayed(scrap_models)(item) for item in categories)
+    models = list(chain.from_iterable(items))
+    print("Total of %s models" % (len(models)))
+    # 1230 models
 
-    # store models
-    all_parts = Parallel(
+    # store parts
+    items = Parallel(
         n_jobs=8,
         verbose=50
-    )(delayed(scrap_parts)(model) for model in all_models)
-    # all_parts = [scrap_parts(model) for model in all_models]
-    all_parts = list(chain.from_iterable(all_parts))
+    )(delayed(scrap_parts)(item) for item in models)
+    parts = list(chain.from_iterable(items))
+    print("Total of %s parts" % (len(parts)))
+    # 4337412 parts
 
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-    print("Loaded %s parts" % (len(all_parts)))
+    # saving json for tests
+    # with open('data.json', 'w') as outfile:
+    #     json.dump(parts, outfile)
 
     client = MongoClient('mongodb://mongodb:mongodb@mongodb:27017/')
     base = client.urparts
     collection = base.urparts
 
-    collection.insert_many(all_parts)
+    collection.insert_many(parts)
 
-    print("Inserted %s parts" % (len(all_parts)))
+    print("Inserted %s parts" % (len(parts)))
 
     collection.create_index([("manufacturer", "text")])
     collection.create_index([("category", "text")])
@@ -168,3 +169,5 @@ if __name__ == "__main__":
     collection.create_index([("part_category", "text")])
 
     print("Created indexes")
+
+    print("--- Script took %s seconds ---" % (time.time() - start_time))

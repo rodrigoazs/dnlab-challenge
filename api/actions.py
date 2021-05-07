@@ -21,31 +21,31 @@ def action_view_urparts(
         query.setdefault(
             "manufacter",
             # {"$regex": ".*{value}.*".format(value=manufacturer)}
-            {"manufacturer": manufacturer}
+            manufacturer
         )
     if category:
         query.setdefault(
             "category",
             # {"$regex": ".*{value}.*".format(value=category)}
-            {"category": category}
+            category
         )
     if model:
         query.setdefault(
             "model",
             # {"$regex": ".*{value}.*".format(value=model)}
-            {"model": model}
+            model
         )
     if part:
         query.setdefault(
             "part",
-            # {"$regex": ".*{value}.*".format(value=part)}
-            {"part": part}
+            {"$regex": ".*{value}.*".format(value=part)}
+            # { "$search": part }
         )
     if part_category:
         query.setdefault(
             "part_category",
             # {"$regex": ".*{value}.*".format(value=part_category)}
-            {"part_category": part_category}
+            part_category
         )
     
     if len(query):

@@ -162,11 +162,13 @@ if __name__ == "__main__":
 
     print("Inserted %s parts" % (len(parts)))
 
-    collection.create_index([("manufacturer", "text")])
-    collection.create_index([("category", "text")])
-    collection.create_index([("model", "text")])
-    collection.create_index([("part", "text")])
-    collection.create_index([("part_category", "text")])
+    collection.create_index([
+        ("manufacturer", "text"),
+        ("category", "text"),
+        ("model", "text"),
+        ("part", "text"),
+        ("part_category", "text"),
+    ])
 
     print("Created indexes")
 

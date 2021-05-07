@@ -20,32 +20,32 @@ def action_view_urparts(
     if manufacturer:
         query.setdefault(
             "manufacter",
-            # {"$regex": ".*{value}.*".format(value=manufacturer)}
-            manufacturer
+            {"$regex": ".*{value}.*".format(value=manufacturer)}
+            # manufacturer
         )
     if category:
         query.setdefault(
             "category",
-            # {"$regex": ".*{value}.*".format(value=category)}
-            category
+            {"$regex": ".*{value}.*".format(value=category)}
+            # category
         )
     if model:
         query.setdefault(
             "model",
-            # {"$regex": ".*{value}.*".format(value=model)}
-            model
+            {"$regex": ".*{value}.*".format(value=model)}
+            # model
         )
     if part:
         query.setdefault(
             "part",
             {"$regex": ".*{value}.*".format(value=part)}
-            # { "$search": part }
+            # part
         )
     if part_category:
         query.setdefault(
             "part_category",
-            # {"$regex": ".*{value}.*".format(value=part_category)}
-            part_category
+            {"$regex": ".*{value}.*".format(value=part_category)}
+            # part_category
         )
     
     if len(query):

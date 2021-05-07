@@ -24,10 +24,10 @@ services:
             - ./api:/code
         depends_on:
             - mongodb
-    scraping:
-        build: ./scraper
-        command: python scrap.py
-        volumes:
-            - ./scraper:/code
-        depends_on:
-            - mongodb
+    # scraping:
+    #     build: ./scraper
+    #     command: python scrap.py
+    #     volumes:
+    #         - ./scraper:/code
+    #     depends_on:
+    #         - mongodb

@@ -128,14 +128,14 @@ if __name__ == "__main__":
 
     # store categories
     all_categories = Parallel(
-        n_jobs=4,
+        n_jobs=8,
         verbose=50
     )(delayed(scrap_categories)(manufacturer) for manufacturer in manufacturers)
     all_categories = list(chain.from_iterable(all_categories))
 
     # store models
     all_models = Parallel(
-        n_jobs=4,
+        n_jobs=8,
         verbose=50
     )(delayed(scrap_models)(category) for category in all_categories)
     # all_models = [scrap_models(category) for category in all_categories]
@@ -143,17 +143,28 @@ if __name__ == "__main__":
 
     # store models
     all_parts = Parallel(
-        n_jobs=4,
+        n_jobs=8,
         verbose=50
     )(delayed(scrap_parts)(model) for model in all_models)
     # all_parts = [scrap_parts(model) for model in all_models]
     all_parts = list(chain.from_iterable(all_parts))
 
     print("--- %s seconds ---" % (time.time() - start_time))
-    print(len(all_parts))
+
+    print("Loaded %s parts" % (len(all_parts)))
 
     client = MongoClient('mongodb://mongodb:mongodb@mongodb:27017/')
     base = client.urparts
-    table = base.urparts
+    collection = base.urparts
 
-    table.insert_many(all_parts)
+    collection.insert_many(all_parts)
+
+    print("Inserted %s parts" % (len(all_parts)))
+
+    collection.create_index([("manufacturer", "text")])
+    collection.create_index([("category", "text")])
+    collection.create_index([("model", "text")])
+    collection.create_index([("part", "text")])
+    collection.create_index([("part_category", "text")])
+
+    print("Created indexes")

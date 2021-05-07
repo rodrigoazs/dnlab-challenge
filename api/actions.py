@@ -16,43 +16,38 @@ def action_view_urparts(
     part: Optional[str] = None,
     part_category: Optional[str] = None
 ):
-    collection.insert_many([
-        {
-            "manufacturer": "Ammann",
-            "category": "Roller Parts",
-            "model": "ASC10{}".format(random.randint(3, 9)),
-            "part": "ND011710",
-            "part_category": "LEFT COVER"
-        }
-    ])
-
     query = {}
     if manufacturer:
         query.setdefault(
             "manufacter",
-            {"$regex": ".*{value}.*".format(value=manufacturer)}
+            # {"$regex": ".*{value}.*".format(value=manufacturer)}
+            {"manufacturer": manufacturer}
         )
     if category:
         query.setdefault(
             "category",
-            {"$regex": ".*{value}.*".format(value=category)}
+            # {"$regex": ".*{value}.*".format(value=category)}
+            {"category": category}
         )
     if model:
         query.setdefault(
             "model",
-            {"$regex": ".*{value}.*".format(value=model)}
+            # {"$regex": ".*{value}.*".format(value=model)}
+            {"model": model}
         )
     if part:
         query.setdefault(
             "part",
-            {"$regex": ".*{value}.*".format(value=part)}
+            # {"$regex": ".*{value}.*".format(value=part)}
+            {"part": part}
         )
     if part_category:
         query.setdefault(
             "part_category",
-            {"$regex": ".*{value}.*".format(value=part_category)}
+            # {"$regex": ".*{value}.*".format(value=part_category)}
+            {"part_category": part_category}
         )
     
     if len(query):
-        return list(collection.find(query))
-    return list(collection.find())
+        return list(collection.find(query).limit(100))
+    return list(collection.find().limit(100))

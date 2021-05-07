@@ -13,6 +13,17 @@ services:
         expose:
             - 27017
         restart: unless-stopped
+    api:
+        build: ./api
+        command: python main.py
+        environment:
+            MONGO_URL: mongodb://mongodb:mongodb@mongodb:27017/
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./api:/code
+        depends_on:
+            - mongodb
     scraping:
         build: ./scraper
         command: python scrap.py

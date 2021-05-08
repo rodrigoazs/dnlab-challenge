@@ -110,20 +110,17 @@ def scrap_parts(item):
     )
 
 
-def map_categories(items, manufacturer):
-    items = list(map(lambda x: (x[0], manufacturer, x[1]), items))
-    return items
+def urparts_scraper():
+    """Initialize web scraping of URParts
+    and save results to a MongoDB collection.
+    """
 
-
-if __name__ == "__main__":
-    start_time = time.time()
-
-    # store catalogues
+    # scrap manufacturers
     manufacturers = scrap_manufacturer()
     print("Total of %s manufacturers" % (len(manufacturers)))
     # 16 manufacturers
 
-    # store categories
+    # scrap categories
     items = Parallel(
         n_jobs=8,
         verbose=50
@@ -132,7 +129,7 @@ if __name__ == "__main__":
     print("Total of %s categories" % (len(categories)))
     # 42 categories
 
-    # store models
+    # scrap models
     items = Parallel(
         n_jobs=8,
         verbose=50
@@ -141,7 +138,7 @@ if __name__ == "__main__":
     print("Total of %s models" % (len(models)))
     # 1230 models
 
-    # store parts
+    # scrap parts
     items = Parallel(
         n_jobs=8,
         verbose=50
@@ -154,14 +151,16 @@ if __name__ == "__main__":
     # with open('data.json', 'w') as outfile:
     #     json.dump(parts, outfile)
 
+    # connect to a mongodb collection
     client = MongoClient('mongodb://mongodb:mongodb@mongodb:27017/')
     base = client.urparts
     collection = base.urparts
 
+    # insert records
     collection.insert_many(parts)
-
     print("Inserted %s parts" % (len(parts)))
 
+    # create indexes
     collection.create_index([
         ("manufacturer", "text"),
         ("category", "text"),
@@ -169,7 +168,10 @@ if __name__ == "__main__":
         ("part", "text"),
         ("part_category", "text"),
     ])
-
     print("Created indexes")
 
+
+if __name__ == "__main__":
+    start_time = time.time()
+    urparts_scraper()
     print("--- Script took %s seconds ---" % (time.time() - start_time))

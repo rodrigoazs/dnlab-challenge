@@ -17,38 +17,26 @@ def scrap_a_tags(url, class_):
     if url == 'index.cfm/page/catalogue/Doosan/Loader Parts/430':
         url = 'index.cfm/page/catalogue/Doosan/Loader Parts/430/Loader'
 
-    # collect first page of list
     page = requests.get(os.path.join(BASE_URL, url))
-
-    # create a BeautifulSoup object
     soup = BeautifulSoup(page.text, 'html.parser')
-
-    # pull all content from the div
     content_list = soup.find(class_=class_)
     
     # 'index.cfm/page/catalogue/Hyundai/Forklift Parts/HDF20/HDF25/HDF30-5'
     if not content_list:
         return []
 
-    # pull all instances of a tag within the div
     content_list_items = content_list.find_all('a')
-
     return content_list_items
 
 
 def get_items(url, class_):
-    # pull all instances of a tag within the div
     content_list_items = scrap_a_tags(url, class_)
 
-    # store items
     items = []
-
-    # create for loop to collect href and names
     for content in content_list_items:
         url = content.get('href')
         name = content.contents[0].strip()
         items.append((url, name))
-
     return items
 
 
@@ -56,10 +44,7 @@ def get_parts(item, class_):
     url, manufacturer, category, model = item
     content_list_items = scrap_a_tags(url, class_)
 
-    # store items
     items = []
-
-    # create for loop to collect href and names
     for content in content_list_items:
         name = content.contents[0].split(' - ')[0].strip()
         part_category = None
@@ -74,7 +59,6 @@ def get_parts(item, class_):
             "part_category": part_category
         }
         items.append(item)
-
     return items
 
 

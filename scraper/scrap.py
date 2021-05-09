@@ -11,6 +11,9 @@ from pymongo import MongoClient
 # base URL
 BASE_URL = 'https://www.urparts.com'
 
+# mongodb connection
+MONGO_URL = 'mongodb://mongodb:mongodb@mongodb:27017/'
+
 
 def scrap_a_tags(url, class_):
     # fix some sections url
@@ -136,7 +139,7 @@ def urparts_scraper():
     #     json.dump(parts, outfile)
 
     # connect to a mongodb collection
-    client = MongoClient('mongodb://mongodb:mongodb@mongodb:27017/')
+    client = MongoClient(MONGO_URL)
     base = client.urparts
     collection = base.urparts
 

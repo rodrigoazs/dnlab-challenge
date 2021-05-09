@@ -24,6 +24,13 @@ Queries can be performed in order to filter the records:
 http://localhost:8000/api/parts?model=ASC100
 ```
 
+Tests can be done inside the API container through:
+
+```bash
+pytest
+```
+
 ## Notes
 
-(1) I created indexes for each data column in order to speed up the queries. 
+1. Indexes were created for each data column in order to speed up the queries. 
+2. HTTP requests for the scraping script were parallelized (joblib) considering 8 workers in order to speed up the web scraping and data extraction.

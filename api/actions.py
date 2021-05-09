@@ -1,7 +1,6 @@
 import os
 from pymongo import MongoClient
 from typing import List, Optional
-import random
 
 
 # connect to mongodb
@@ -17,6 +16,19 @@ def action_view_urparts(
     part: Optional[str] = None,
     part_category: Optional[str] = None
 ):
+    """Connects to urparts collection to retrieve
+    its records considering query strings.
+
+    Args:
+        manufacturer (str, optional): A manufacturer query. Defaults to None.
+        category (str, optional): A category query. Defaults to None.
+        model (str, optional): A model query. Defaults to None.
+        part (str, optional): A part query. Defaults to None.
+        part_category (str, optional): A part categoruy query. Defaults to None.
+
+    Returns:
+        List: A filtered list of records.
+    """
     query = {}
     if manufacturer:
         query.setdefault(

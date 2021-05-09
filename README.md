@@ -26,4 +26,4 @@ http://localhost:8000/api/parts?model=ASC100
 
 ## Notes
 
-
+(1) I created indexes for each data column in order to speed up the queries. 

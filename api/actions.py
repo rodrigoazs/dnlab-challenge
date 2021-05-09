@@ -20,7 +20,7 @@ def action_view_urparts(
     query = {}
     if manufacturer:
         query.setdefault(
-            "manufacter",
+            "manufacturer",
             manufacturer
             # {"$regex": ".*{value}.*".format(value=manufacturer)}
         )

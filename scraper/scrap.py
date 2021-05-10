@@ -10,9 +10,10 @@ from pymongo import MongoClient
 
 # base URL
 BASE_URL = 'https://www.urparts.com'
-
 # mongodb connection
 MONGO_URL = 'mongodb://mongodb:mongodb@mongodb:27017/'
+# number of workers
+N_JOBS = 8
 
 
 def scrap_a_tags(url, class_):
@@ -109,7 +110,7 @@ def urparts_scraper():
 
     # scrap categories
     items = Parallel(
-        n_jobs=8,
+        n_jobs=N_JOBS,
         verbose=50
     )(delayed(scrap_categories)(item) for item in manufacturers)
     categories = list(chain.from_iterable(items))
@@ -118,7 +119,7 @@ def urparts_scraper():
 
     # scrap models
     items = Parallel(
-        n_jobs=8,
+        n_jobs=N_JOBS,
         verbose=50
     )(delayed(scrap_models)(item) for item in categories)
     models = list(chain.from_iterable(items))
@@ -127,7 +128,7 @@ def urparts_scraper():
 
     # scrap parts
     items = Parallel(
-        n_jobs=8,
+        n_jobs=N_JOBS,
         verbose=50
     )(delayed(scrap_parts)(item) for item in models)
     parts = list(chain.from_iterable(items))
